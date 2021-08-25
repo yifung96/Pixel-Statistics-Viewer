@@ -16,9 +16,9 @@ if not os.path.exists('ResultFolder\\sfile_Data'):
     os.makedirs('ResultFolder\\sfile_Data')
 
 ###################################  Change Setting here  ###########################################
-# [1: Analyse Pix Stats at Fail Sweep || 2: Pix Stats Min Max Avg]
+# [1: Pix Stats Visualization at Fail Sweep || 2: Pix Stats Min Max Avg ]
 mode = 1
-param = ['Squal','Squal2','Shutter','Pix_Sum','Pix_Min','Pix_Max','Filter']    
+param = ['Squal','Squal2','Shutter','Pix_Sum','Pix_Min','Pix_Max','Filter','CumX','CumY']    
 #####################################################################################################
 
 ##  INIT Main Program

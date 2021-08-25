@@ -202,14 +202,19 @@ class ProcData(object):
         self.mode = mode
         self.resfile = resfilename
         self.param = param
-        if self.mode == 1:
+        pri_sweep = self.fileDat.topParam['PrimarySweep'] 
+        if self.mode == 1 and pri_sweep != 'None':
             Res_Dict = self.analyze(self.fileDat,param)
             self.Result = Res_Dict
             self.present1(self.Result,self.resfile,self.param)           
-        elif self.mode == 2:
+        elif self.mode == 2 and pri_sweep != 'None':
             Res_Dict = self.mode2_run(self.fileDat,self.param)
             self.Result = Res_Dict
             self.present2(self.Result,self.resfile)
+        elif pri_sweep == 'None':
+            Res_Dict = self.mode3_run(self.fileDat,self.param)
+            self.Result = Res_Dict
+            self.present3(self.Result,self.resfile,self.param)
             
     def analyze(self,fileDat,param):
         #   Identify fail sweep
@@ -352,7 +357,39 @@ class ProcData(object):
                 worksheet.insert_chart('E1', chart) 
                 
             resBook.save()        
-        
+  
+    #   Mode 3 Function
+    def mode3_run(self,fileDat,param):
+        Res_Dict = {}
+        rep = fileDat.topParam['Repetitions']
+        for par in param:
+            Res_Dict[par] = {}
+            for rep in range(5):
+                Res_Dict[par]["rep"+str(rep)] = fileDat.Database_Dict['ProcData'][0][rep][par]
+                
+        return Res_Dict
+    
+    def present3(self,Result,resfile,param):
+        with pd.ExcelWriter(resfile, engine='xlsxwriter') as resBook:
+            for par in param:
+                resDF = pd.DataFrame(Result[par])
+                resDF.drop(resDF.head(1).index, inplace=True)
+                resDF.fillna('',inplace = True)
+                resDF.to_excel(resBook, sheet_name = par)
+                #Plot Result
+                workbook = resBook.book
+                worksheet = resBook.sheets[par]
+                chart = workbook.add_chart({'type': 'scatter','subtype':'straight_with_markers'})
+                max_row = resDF.shape[0]
+                max_col = resDF.shape[1]+1
+                for col in range(1,max_col):
+                    chart.add_series({'name':[par,0,col],'categories':[par,1,1,max_row,0],
+                                  'values':[par,1,col,max_row,col],'marker':{'type': 'circle', 'size': 2}})
+                chart.set_x_axis({'name': 'Index'})
+                chart.set_y_axis({'name': par,'major_gridlines': {'visible': False}})
+                worksheet.insert_chart('E1', chart) 
+  
+            resBook.save()        
         
         
         
